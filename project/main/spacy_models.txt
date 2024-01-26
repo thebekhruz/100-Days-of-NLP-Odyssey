@@ -1,2 +1,6 @@
 # The model i will start my development with. 24/01/2024
 $ python -m spacy download en_core_web_sm
+
+ 
+# The model for word embeddings 26/01/2024
+$ python -m spacy download en_core_web_md
