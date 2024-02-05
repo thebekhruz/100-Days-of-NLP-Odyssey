@@ -1,0 +1,17 @@
+# General system-related ignore
+.DS_Store        
+*.pyc            
+__pycache__/    
+
+# Virtual environment
+venv/       
+
+# Project-specific folders
+Project*Notes/   
+Leetcode*Notes/  
+data/            
+.obsidian/      
+
+
+# Miscellaneous files
+relate.project.json  

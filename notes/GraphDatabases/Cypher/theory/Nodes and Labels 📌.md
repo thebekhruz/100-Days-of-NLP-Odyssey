@@ -1,0 +1,12 @@
+- **Node Creation**:
+    - `(learner:Learner {name: 'Bekhruz'})`
+    - `(hello: Greeting {message: 'Nice to meet you'})`
+- **Variables:**
+	- `learner` and `hello` are variable names assigned to the nodes being created
+- **Labels**:
+    - Each node is given a label (`Learner` and `Greeting`, respectively).
+    - Labels categorise nodes, making them easier to query.1
+- **Properties**:
+    - Each node has properties defined in curly braces `{}`.
+    - `learner` node has a `name` property with the value `'Bekhruz'`.
+    - `hello` node has a `message` property with the `Nice to meet you` value.
