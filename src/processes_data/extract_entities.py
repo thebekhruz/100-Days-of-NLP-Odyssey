@@ -3,16 +3,11 @@ import numpy as np
 import spacy
 from sklearn.cluster import KMeans
 
+# file_path = '/Users/thebekhruz/Desktop/100Days-Of-Code/100-Days-of-NLP-Odyssey/data/raw_data/sample_data.csv'
+# output_file_path = '/Users/thebekhruz/Desktop/100Days-Of-Code/100-Days-of-NLP-Odyssey/data/processed_data/vectorized_data.csv'
 
-file_path = '/Users/thebekhruz/Desktop/100Days-Of-Code/100-Days-of-NLP-Odyssey/data/raw_data/sample_data.csv'
-output_file_path = '/Users/thebekhruz/Desktop/100Days-Of-Code/100-Days-of-NLP-Odyssey/data/processed_data/vectorized_data.csv'
-
-
-
-
-df = pd.read_csv(file_path, delimiter='\t', header=None, names=['doc_id', 'type', 'value'])
+# df = pd.read_csv(file_path, delimiter='\t', header=None, names=['doc_id', 'type', 'value'])
 nlp = spacy.load("en_core_web_lg")
-
 
 
 # Preprocessing function
@@ -43,10 +38,75 @@ def k_cluster(document_embeddings, n_clusters: int):
     return labels, kmeans.cluster_centers_
 
 
-def get_texts():
-    # Directly filter and concatenate 'title' and 'description' rows in one step
-    combined = df[df['type'].isin(['title', 'description'])]['value']
-    return combined
+# def get_texts(df):
+#     # Directly filter and concatenate 'title' and 'description' rows in one step
+#     combined = df[df['type'].isin(['title', 'description'])]['value']
+#     return combined
+
+
+def get_texts_and_ids(df):
+    # Return both 'doc_id' and 'value' for filtering
+    filtered = df[df['type'].isin(['title', 'description'])][['doc_id', 'value']]
+    return filtered
+
+def main(file_path, output_file_path, n_clusters):
+    
+    df = pd.read_csv(file_path, delimiter='\t', header=None, names=['doc_id', 'type', 'value'])
+    
+    texts = get_texts(df = df)
+    document_ids = df[df['type'].isin(['title', 'description'])]['doc_id']
+    
+    # Generate embeddings
+    embeddings = np.array([get_document_embedding(text) for text in texts])
+
+    # Cluster the embeddings
+    labels, _ = k_cluster(embeddings, n_clusters)
+
+    # Prepare the output DataFrame
+    output_df = pd.DataFrame({'doc_id': document_ids, 'cluster': labels})
+    output_df.columns = ['doc_id', 'cluster']
+
+    # Write the output DataFrame to a file
+    try:
+        output_df.to_csv(output_file_path, index=False, sep='\t', header = True)
+        print("Output has been saved to: \n\n" + output_file_path + "\n")
+    except:
+        print("Error occured while writing to file")
+        raise Exception("Error occured while writing to file")    
+
+
+
+# file_path = '/Users/thebekhruz/Desktop/100Days-Of-Code/100-Days-of-NLP-Odyssey/data/raw_data/sample_data.csv'
+file_path = 'data/raw_data/sample_data.csv'
+output_file_path = 'data/processed_data/vectorized_data.csv'
+n_clusters = 10 # Number of clusters to use
+main(file_path, output_file_path, n_clusters)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
