@@ -14,11 +14,9 @@ def preprocess_text(text):
 
 # Build the bigram and trigram models
 def build_bigram_trigram_models(texts):
-    bigram = gensim.models.Phrases(texts, min_count=5, threshold=100) # higher threshold fewer phrases.
-    trigram = gensim.models.Phrases(bigram[texts], threshold=100)  
-    bigram_mod = gensim.models.phrases.Phraser(bigram)
-    trigram_mod = gensim.models.phrases.Phraser(trigram)
-    return bigram_mod, trigram_mod
+    bigram = gensim.models.Phrases(texts, min_count=5, threshold=100)   # Higher threshold, fewer phrases.
+    trigram = gensim.models.Phrases(bigram[texts], threshold=100)       # Higher threshold, fewer phrases.
+    return gensim.models.phrases.Phraser(bigram), gensim.models.phrases.Phraser(trigram)
 
 
 def make_bigrams(texts, bigram_mod):
