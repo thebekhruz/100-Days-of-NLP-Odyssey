@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import spacy
 from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 
@@ -39,6 +40,20 @@ def get_texts_and_ids(df):
     filtered = df[df['type'].isin(['title', 'description'])][['doc_id', 'value']]
     return filtered
 
+
+def get_top_words_for_cluster(cluster_center, n_top_words=10):
+    # Calculate cosine similarity between the cluster center and all word vectors
+    similarities = cosine_similarity(cluster_center.reshape(1, -1), nlp.vocab.vectors.data)
+    
+    # Get the indices of the top words
+    top_word_indices = similarities.argsort()[0][-n_top_words:]
+    
+    # Map indices to words
+    top_words = [nlp.vocab.strings[word_id] for word_id in top_word_indices]
+    
+    return top_words
+
+
 def main(file_path, output_file_path, n_clusters):
     df = pd.read_csv(file_path, delimiter='\t', header=None, names=['doc_id', 'type', 'value'])
     texts_and_ids = get_texts_and_ids(df)
@@ -62,6 +77,12 @@ def main(file_path, output_file_path, n_clusters):
         print("Output has been saved to: \n\n" + output_file_path + "\n")
     except Exception as e:
         print(f"Error occurred while writing to file: {e}")
+
+
+    # After clustering, for each cluster center, find top words
+    for i, center in enumerate(kmeans.cluster_centers_):
+        top_words = get_top_words_for_cluster(center)
+        print(f"Cluster {i}: {top_words}")
 
 
 

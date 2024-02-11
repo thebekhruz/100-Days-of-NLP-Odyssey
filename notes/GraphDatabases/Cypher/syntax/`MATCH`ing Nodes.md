@@ -25,4 +25,4 @@ RETURN n
 
 - **`MATCH (n:Student)`**: Matches all nodes with the label `Student`.
 - **`WHERE n.first = 'Alia`'**: Narrows down the result to nodes where the property `first` equals `'Alia'`.
-[[Syntax -- `MATCH`ing Relationships]]
+
