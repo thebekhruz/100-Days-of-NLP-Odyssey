@@ -90,6 +90,6 @@ nlp = spacy.load("en_core_web_lg")
 
 file_path = 'data/raw_data/sample_data.csv'
 output_file_path = 'data/processed_data/vectorized_data.csv'
-n_clusters = 10 # Number of clusters to use
+n_clusters = 11 # Number of clusters to use
 main(file_path, output_file_path, n_clusters)
 
