@@ -6,7 +6,6 @@ from gensim.models import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 # from gensim.corpora import Dictionary
 
-import re
 import numpy as np
 import pandas as pd
 from pprint import pprint
@@ -32,15 +31,7 @@ def preprocess_texts(texts):
         processed_texts.append([token.lemma_ for token in doc if not token.is_stop and not token.is_punct])
     return processed_texts
 
-# def preprocess_texts(texts):
-#     """ Batch process a list of texts, applying preprocessing steps such as lemmatization and stopword removal."""
-#     processed_texts = []
-#     for doc in nlp.pipe(texts, batch_size=256):
-#         processed_texts.append(
-#             [token.lemma_.lower() for token in doc 
-#              if not token.is_stop and not token.is_punct and token.pos_ in ['NOUN', 'ADJ', 'VERB', 'ADV']]
-#         )
-#     return processed_texts
+
 
 # Build the bigram and trigram models
 def build_bigram_trigram_models(texts):
@@ -59,12 +50,6 @@ def make_bigrams(texts, bigram_mod):
 
 def make_trigrams(texts, bigram_mod, trigram_mod):
     return [trigram_mod[bigram_mod[doc.split()]] for doc in texts]
-
-
-def get_texts_and_ids(df):
-    # Return both 'doc_id' and 'value' for filtering
-    filtered = df[df['type'].isin(['title', 'description'])][['doc_id', 'value']]
-    return filtered
 
 
 def get_texts(df):
@@ -162,6 +147,6 @@ def find_optimal_k(limit=21, start=5, step=3):
 
 if __name__ == "__main__":
 
-    find_optimal_k(limit=10, start=2, step=2) # Uncomment to find optimal number of topics
+    find_optimal_k(limit=30, start=2, step=2) # Uncomment to find optimal number of topics
     # Optimum number of topics is 11.
     # main()
