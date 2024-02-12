@@ -74,6 +74,9 @@ def preprocess_text(text):
     Preprocess a single document by expanding abbreviations, tokenizing, converting to lowercase,
     lemmatizing, removing stopwords, and punctuation.
     """
+    # Replace underscores with spaces
+    text = text.replace('_', ' ')
+    
     expanded_text = expand_abbreviations(text, abbreviation_expansions)
     doc = nlp(expanded_text)
     return " ".join(token.lemma_.lower() for token in doc if not token.is_stop and not token.is_punct)
