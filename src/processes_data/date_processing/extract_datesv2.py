@@ -104,8 +104,7 @@ BRACKET_PATTERN = re.compile(r"\[|\]")
 
 
 # Load the SpaCy model with specific components disabled for efficiency
-# NLP = spacy.load("en_core_web_sm")
-NLP = spacy.load("en_core_web_trf") 
+NLP = spacy.load("en_core_web_sm") # NER enabled for date normalization
 
 
 def expand_abbreviations(text):
@@ -135,71 +134,35 @@ def remove_trailing_s(text):
 
 
 
+import requests  # For sending requests to Duckling
+
 def normalize_and_replace_dates(text):
-    doc = NLP(text)  # Process text with spaCy
+    # Duckling endpoint
+    duckling_url = 'http://localhost:8000/parse'  # Adjust if your Duckling server runs on a different port
 
-    modified_text = text
+    # Send text to Duckling for date parsing
+    response = requests.post(duckling_url, data={'text': text, 'locale': 'en_GB', 'tz': 'Europe/London'})
 
-    # Find dates using NER
-    for ent in doc.ents:
-        if ent.label_ == 'DATE':
-            original_date = ent.text
-            date_replaced = False
-            
-            # Check against century mappings first
-            for desc, (start, end) in century_mappings.items():
-                try:
-                    if desc in original_date:
-                        modified_text = modified_text.replace(original_date, start)  # Use start of range
-                        date_replaced = True
-                        break
-                except ValueError:
-                        # print(f"Could not parse date: {original_date}")
-                    continue
+    if response.status_code == 200:
+        data = response.json()
+        modified_text = text
 
-            # Special handling for "mid YYYY"
-            if 'mid' in original_date.lower():
-                try:
-                    year = re.search(r'\d{4}', original_date).group(0)
-                    normalized_date = f"{year}-06-15"
-                    modified_text = modified_text.replace(original_date, normalized_date)
-                    date_replaced = True
-                except AttributeError:
-                    print(f"Could not find year in: {original_date}")
-            
-            # Handling approximate dates like "1956/1957"
-            if not date_replaced and '/' in original_date:
-                try:
-                    first_year = original_date.split('/')[0]
-                    if first_year.isdigit():
-                        normalized_date = f"{first_year}-01-01"  # Using Jan 1 as a default date
-                        modified_text = modified_text.replace(original_date, normalized_date)
-                        date_replaced = True
-                except (IndexError, ValueError):
-                    print(f"Could not normalize approximate date: {original_date}")
+        # Process each entity returned by Duckling
+        for entity in data:
+            if entity['dim'] == 'time':
+                original_text = entity['body']
+                # Use the value returned by Duckling, which might need formatting
+                date_value = entity['value']['value']
+                # Format the date as needed, Duckling returns in ISO format by default
+                normalized_date = date_value.split('T')[0]  # Extract just the date part
 
-            # Handling date ranges like "1926-1928" or "1926-28"
-            if not date_replaced and '-' in original_date:
-                try:
-                    # Extract the first year from the range
-                    first_year = original_date.split('-')[0]
-                    if first_year.isdigit():
-                        normalized_date = f"{first_year}-01-01"  # Using Jan 1 as a default date
-                        modified_text = modified_text.replace(original_date, normalized_date)
-                        date_replaced = True
-                except (IndexError, ValueError):
-                    print(f"Could not normalize date range: {original_date}")
+                # Replace the original date text with normalized date
+                modified_text = modified_text.replace(original_text, normalized_date)
 
-            # If not replaced by any specific handling, attempt parsing with enhanced flexibility
-            if not date_replaced:
-                try:
-                    normalized_date = parse(original_date, default=datetime(1800, 1, 1), fuzzy=True).strftime('%Y-%m-%d')
-                    modified_text = modified_text.replace(original_date, normalized_date)
-                except ValueError:
-                    print(f"Could not parse date: {original_date}")
-                    continue
-
-    return modified_text
+        return modified_text
+    else:
+        print("Failed to connect to Duckling server.")
+        return text
 
 
 
