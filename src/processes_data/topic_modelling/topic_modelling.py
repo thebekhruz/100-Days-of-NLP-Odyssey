@@ -49,7 +49,8 @@ def main():
     start_time = time.time()
 
     # file_path = 'data/intermediate/preprocessing/processed_data_title.csv'
-    file_path = 'data/intermediate/preprocessing/processed_data_descr.csv'
+    # file_path = 'data/intermediate/preprocessing/processed_data_descr.csv'
+    file_path = 'data/intermediate/preprocessing/combined_df_for_lda.csv'
     titles = load_text_data(file_path, 'title')
     
     processed_titles = [title.split() for title in titles]
@@ -57,7 +58,7 @@ def main():
     data_with_ngrams = apply_ngrams(processed_titles, bigram_mod, trigram_mod)
     
     id2word, corpus = create_dictionary_corpus(data_with_ngrams)
-    lda_model = build_lda_model(corpus, id2word, num_topics=5)
+    lda_model = build_lda_model(corpus, id2word, num_topics=7)
 
     # Calculate perplexity and coherence score
     perplexity = lda_model.log_perplexity(corpus)
