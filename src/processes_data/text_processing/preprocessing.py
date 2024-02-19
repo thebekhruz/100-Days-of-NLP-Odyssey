@@ -17,6 +17,23 @@ NLP = spacy.load("en_core_web_md", disable=["ner", "parser"])
 
 # Corrected Abbreviations map
 ABBREVIATION_EXPANSIONS = {
+    # Geographical:
+    "PH": "Public house",
+    "R.Wye": "River Wye",
+    "HW": "High Wycombe",
+    "HQ": "Headquarters",
+    "HDC": "High Wycombe District Council",
+    # Historical and Military:
+    "W.R.A.F.": "Women's Royal Air Force.",
+    "V.E.Day": "Victory in Europe Day", 'VE Day': "Victory in Europe Day",
+    "WWI": "First World War",
+    "WWII": "Second World War",
+    "RAF": "Royal Air Force",
+    "HMS": "Her Majesty's Ship",
+    "HRH": "His Royal Highness",
+    "MP": "Member of Parliament",
+    "BFP": "Bucks Free Press",
+    "VJ Day": "Victory over Japan Day", "VJ-day": "Victory over Japan Day",
     # Compass directions
     "N": "North",
     "S": "South",
@@ -26,23 +43,22 @@ ABBREVIATION_EXPANSIONS = {
     "NW": "Northwest",
     "SE": "Southeast",
     "SW": "Southwest",
+    "NNE": "North-Northeast",
+    "ENE": "East-Northeast",
+    "ESE": "East-Southeast",
+    "SSE": "South-Southeast",
+    "SSW": "South-Southwest",
+    "WSW": "West-Southwest",
+    "WNW": "West-Northwest",
+    "NNW": "North-Northwest",
     # Street Names
     "St": "Street",
     "Rd": "Road",
     "Ave": "Avenue",
     "Dr": "Drive",
-    "Blvd": "Boulevard",
     "Ln": "Lane",
     "Ct": "Court",
-    "Pl": "Place",
     "Sq": "Square",
-    "Ter": "Terrace",
-    "Cir": "Circle",
-    # Geographical locations (examples)
-    "US": "United States",
-    "UK": "United Kingdom",
-    "CA": "California",
-    "NY": "New York",
     # Dates
     "c.": "circa", "c" : "circa",
     "Mon.": "Monday ", "Mon": "Monday",
@@ -63,10 +79,12 @@ ABBREVIATION_EXPANSIONS = {
     "Sep.": "September ", "Sep": "September ", "Sept.": "September ", "Sept": "September ",
     "Oct.": "October ", "Oct": "October",
     "Nov.": "November ", "Nov": "November",
-    "Dec.": "December ", "Dec": "December"
+    "Dec.": "December ", "Dec": "December",
+    # Other
+    "FC": "Football Club"
+
     # Extend this list as needed
 }
-
 
 def expand_abbreviations(text):
     """Replace abbreviations in the text with their expanded forms."""
