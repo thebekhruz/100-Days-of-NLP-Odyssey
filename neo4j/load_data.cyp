@@ -1,19 +1,54 @@
-// Step 1A: Set Titles for Documents
-LOAD CSV WITH HEADERS FROM 'file:///sample_data.csv' AS row FIELDTERMINATOR '\t'
-WITH row WHERE row.type = 'title'
-MERGE (doc:Document {doc_id: row.doc_id})
-SET doc.doc_title = row.value;
+CALL apoc.load.json("file:///data.jsonl") YIELD value AS data
+UNWIND data.mentions AS mention
+WITH data, COLLECT(mention) AS mentions
+MERGE (doc:DOCUMENT {doc_id: data.IAID, text: data.text})
+
+FOREACH(mention IN mentions |
+
+    // Handle DATE mentions by creating or merging DATE nodes
+    FOREACH(_ IN CASE WHEN mention.ne_type = 'DATE' THEN [1] ELSE [] END |
+        MERGE (date:DATE {ne_span: mention.ne_span})
+        ON CREATE SET date.ne_start = mention.ne_start, date.ne_end = mention.ne_end
+        MERGE (doc)-[:MENTIONED_ON {ne_type: mention.ne_type}]->(date)
+    )
+
+    // Handle PERSON mentions by creating or merging PERSON nodes
+    FOREACH(_ IN CASE WHEN mention.ne_type = 'PER' THEN [1] ELSE [] END |
+        MERGE (person:PERSON {ne_span: mention.ne_span, ne_start: mention.ne_start, ne_end: mention.ne_end})
+        FOREACH (_ IN CASE WHEN mention.id IS NOT NULL THEN [1] ELSE [] END |
+            SET person.wiki_ID = mention.id
+        )
+        MERGE (doc)-[:MENTIONS {ne_type: mention.ne_type}]->(person)
+    )
+
+    // Handle ORGANISATION mentions by creating or merging ORGANISATION nodes
+    FOREACH(_ IN CASE WHEN mention.ne_type = 'ORG' THEN [1] ELSE [] END |
+        MERGE (organisation:ORGANISATION {ne_span: mention.ne_span, ne_start: mention.ne_start, ne_end: mention.ne_end})
+        FOREACH (_ IN CASE WHEN mention.id IS NOT NULL THEN [1] ELSE [] END |
+            SET organisation.wiki_ID = mention.id
+        )
+        MERGE (doc)-[:MENTIONS {ne_type: mention.ne_type}]->(organisation)
+    )
+
+    // Handle LOCATION mentions by creating or merging LOCATION nodes
+    FOREACH(_ IN CASE WHEN mention.ne_type = 'LOC' THEN [1] ELSE [] END |
+        MERGE (location:LOCATION {ne_span: mention.ne_span, ne_start: mention.ne_start, ne_end: mention.ne_end})
+        FOREACH (_ IN CASE WHEN mention.id IS NOT NULL THEN [1] ELSE [] END |
+            SET location.wiki_ID = mention.id
+        )
+        MERGE (doc)-[:MENTIONS {ne_type: mention.ne_type}]->(location)
+        // Ensure 'organisation' node is defined or available in this scope if you need to use it here
+        // MERGE (organisation)-[:LOCATED_IN]->(location)
+    )
+
+    // Handle MISCELLANEOUS mentions by creating or merging MISCELLANEOUS nodes
+    FOREACH(_ IN CASE WHEN mention.ne_type = 'MISC' THEN [1] ELSE [] END |
+        MERGE (misc:MISCELLANEOUS {ne_span: mention.ne_span, ne_start: mention.ne_start, ne_end: mention.ne_end})
+        FOREACH (_ IN CASE WHEN mention.id IS NOT NULL THEN [1] ELSE [] END |
+            SET misc.wiki_ID = mention.id
+        )
+        MERGE (doc)-[:MENTIONS {ne_type: mention.ne_type}]->(misc)
+    )
 
 
-
-LOAD CSV WITH HEADERS FROM 'file:///sample_data.csv' AS row FIELDTERMINATOR '\t'
-WITH row WHERE row.type = 'description'
-MATCH (doc:Document {doc_id: row.doc_id})
-SET doc.doc_descr = row.value;
-
-
-LOAD CSV WITH HEADERS FROM 'file:///sample_data.csv' AS row FIELDTERMINATOR '\t'
-WITH row WHERE row.type = 'mentions'
-MATCH (doc:Document {doc_id: row.doc_id})
-MERGE (entity:Entity {url: row.value})
-MERGE (doc)-[:Mentions]->(entity);
+)
