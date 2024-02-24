@@ -4,13 +4,6 @@ import spacy
 import re
 from dateutil.parser import parse
 
-
-
-# Precompile regular expressions for efficiency
-APOSTROPHE_PATTERN = re.compile(r"[^\w\d\s]+")
-BRACKET_PATTERN = re.compile(r"\[|\]")
-
-
 # Load the SpaCy model with specific components disabled for efficiency
 NLP = spacy.load("en_core_web_md", disable=["ner", "parser"])
 
@@ -93,10 +86,15 @@ def expand_abbreviations(text):
         text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
     return text
 
+# Precompile regular expressions for efficiency
+APOSTROPHE_PATTERN = re.compile(r"[^\w\d\s]+")
+BRACKET_PATTERN = re.compile(r"\[|\]")
+NUMBER_WITH_S_PATTERN = re.compile(r"\b(\d+)s\b")
 
 def clean_text(text):
     """Clean a single text string by removing apostrophes and brackets."""
     text = APOSTROPHE_PATTERN.sub("", text)
+    text = NUMBER_WITH_S_PATTERN.sub("\1", text) 
     text = BRACKET_PATTERN.sub(" ", text)
     return text
 
@@ -104,13 +102,13 @@ def clean_text(text):
 def preprocess_texts_in_batches(texts, batch_size=256):
     """Process texts in batches with preprocessing steps."""
     preprocessed_texts = [
-        clean_text(expand_abbreviations(text if isinstance(text, str) else "[ No Description Available ]"))
+        expand_abbreviations(clean_text(text if isinstance(text, str) else "[ No Description Available ]"))
         for text in texts
     ]
 
     processed_texts = []
     for doc in NLP.pipe(preprocessed_texts, batch_size=batch_size):  # Disable NER here as it's already applied
-        processed_text = " ".join(token.lemma_.lower() for token in doc if not token.is_stop and not token.is_punct)
+        processed_text = " ".join(token.text.lower() for token in doc if not token.is_stop and not token.is_punct)
         processed_texts.append(processed_text)
     
     return processed_texts
@@ -134,8 +132,8 @@ def main():
 
     # Define file paths
     input_file_path = 'data/intermediate/swop_triples_cleaned.csv'
-    output_file_path_titles = 'data/intermediate/preprocessing/processed_data_title.csv'
-    output_file_path_descriptions = 'data/intermediate/preprocessing/processed_data_descr.csv'
+    output_file_path_titles = 'data/intermediate/preprocessing/processed_data_title_no_lemma.csv'
+    output_file_path_descriptions = 'data/intermediate/preprocessing/processed_data_descr_no_lemma.csv'
 
     # Load data
     df = pd.read_csv(input_file_path, delimiter='\t', header=None, names=['doc_id', 'type', 'value'])
