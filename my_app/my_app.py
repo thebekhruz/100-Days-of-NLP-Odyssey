@@ -23,6 +23,10 @@ def load_search_page(db_connection):
             ui.execute_query(custom_query)
 
 
+def new_form(db_connection):
+    ui = StreamlitUI(db_connection)
+    ui.display_form()
+
 
 def main():
     # Initialize Neo4j connection using Streamlit's session state
@@ -34,7 +38,8 @@ def main():
     
 
     db_connection = st.session_state['db_connection']
-    load_search_page(db_connection)
+    new_form(db_connection)
+    # load_search_page(db_connection)
     # Define the navigation menu
     menu = ["Search App", "Semantic Search App", "Documentation"]
     choice = st.sidebar.selectbox("Menu", menu)
