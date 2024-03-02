@@ -16,3 +16,4 @@ data/
 
 # Miscellaneous files
 relate.project.json  
+main_app/apicache*
