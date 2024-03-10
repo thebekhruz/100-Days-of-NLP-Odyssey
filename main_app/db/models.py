@@ -1,25 +1,40 @@
 from neomodel import (StructuredNode, StringProperty, RelationshipTo,
-      RelationshipFrom, StructuredRel, ZeroOrMore, IntegerProperty, UniqueIdProperty)
+                      RelationshipFrom, StructuredRel, ZeroOrMore, IntegerProperty,
+                      UniqueIdProperty, config)
 
-from neomodel import config
-config.DATABASE_URL = "bolt://neo4j:codingRules@localhost:7687"   
+# Database configuration should be done elsewhere, e.g., in a separate config file or setup script
+config.DATABASE_URL = "bolt://neo4j:codingRules@localhost:7687"
 
-class MENTIONS(StructuredRel):
+class SingletonMeta(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+class BaseRel(StructuredRel):
     ne_type = StringProperty()
     ne_start = IntegerProperty()
     ne_end = IntegerProperty()
+    relevance = IntegerProperty()
 
 
-class MENTIONED_ON(StructuredRel):
-    ne_type = StringProperty()
-    ne_end = IntegerProperty()
-    ne_start = IntegerProperty()
+class MENTIONS(BaseRel):
+    pass
 
+class MENTIONED_ON(BaseRel):
+    pass
 
+class BaseEntity(StructuredNode):
+    name = StringProperty()
+    wiki_ID = StringProperty()  # Assuming wiki_ID is unique
+    mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
 
 class DOCUMENT(StructuredNode):
     text = StringProperty()
-    doc_id = StringProperty()
+    doc_id = StringProperty(unique_index=True)  # Assuming doc_id is unique
+    text_embedding = 
 
     mentions_person = RelationshipTo('PERSON', 'MENTIONS', model=MENTIONS)
     mentions_location = RelationshipTo('LOCATION', 'MENTIONS', model=MENTIONS)
@@ -27,37 +42,18 @@ class DOCUMENT(StructuredNode):
     mentions_miscellaneous = RelationshipTo('MISCELLANEOUS', 'MENTIONS', model=MENTIONS)
     mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
 
-class PERSON(StructuredNode):
-    name = StringProperty()
-    wiki_ID = StringProperty()
 
-    mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
+class PERSON(BaseEntity):
+    pass
 
+class LOCATION(BaseEntity):
+    pass
 
-class LOCATION(StructuredNode):
-    name = StringProperty()
-    wiki_ID = StringProperty()
+class ORGANISATION(BaseEntity):
+    pass
 
-    mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
-
-
-class ORGANISATION(StructuredNode):
-    name = StringProperty()
-    wiki_ID = StringProperty()
-
-    located_in = RelationshipTo('LOCATION', 'LOCATED_IN')
-    mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
-
-
-class MISCELLANEOUS(StructuredNode):
-    name = StringProperty()
-    wiki_ID = StringProperty()
-
-    mentioned_on = RelationshipTo('DATE', 'MENTIONED_ON', model=MENTIONED_ON)
-
+class MISCELLANEOUS(BaseEntity):
+    pass
 
 class DATE(StructuredNode):
     date = StringProperty()
-
-
-

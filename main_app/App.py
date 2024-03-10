@@ -20,6 +20,7 @@ class App:
     def run(self):
         """Runs the main application logic."""
 
+
         sidebar = SidebarUI()
         container = ContainerUI()
         selected_entity, selected_relationship, target_entity, number_of_results_to_explore, outputType = sidebar.get_sidebar()
@@ -27,14 +28,26 @@ class App:
         st.write(f"Selected Entity: {selected_entity.name},\n Selected Relationship: {selected_relationship.name},\n Target Entity: {target_entity.name},\n Number of Results: {number_of_results_to_explore},\n Output Type: {outputType}")
         
         container.get_filters(subject=selected_entity, target=target_entity)
-        # container.display_search_and_filter_buttons()
-        filters = container.display_search_and_filter_buttons(st.session_state['db_connection'])
+
+        container.display_search_and_filter_buttons(st.session_state['db_connection'])
+
+
+    def semantic_search(self):
+        from neo4j import GraphDatabase
+        query = st.text_input('Input your query here:')
+        
+
+        driver = Neo4jConnector()
+        driver.initialize_connection()
+
+
 
 
 
 if __name__ == "__main__":
     app = App()
     app.run()
+    # app.semantic_search()
 
     # people = DOCUMENT.mentions_person.fil
     # documents = get_10_documents_with_person_mentions()
